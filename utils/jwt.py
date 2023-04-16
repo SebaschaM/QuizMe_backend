@@ -15,7 +15,6 @@ class AuthHandler:
             "uid": uid,
             "exp": datetime.utcnow() + timedelta(days=1),
         }
-
         token = jwt.encode(payload, getenv(
             "JWT_SECRET_KEY"), algorithm="HS256")
         return token

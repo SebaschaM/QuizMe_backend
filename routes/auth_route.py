@@ -24,29 +24,26 @@ async def register_user(req: Request):
 
         if userDB:
             return JSONResponse({"ok": False, "msg": "User already registered"}, 400)
-
         insertUser(new_user)
-        sendMail(new_user["email"], new_user["uid"], new_user["fullname"])
+        # sendMail(new_user["email"], new_user["uid"], new_user["fullname"])
         return JSONResponse({"ok": True, "msg": "User registered successfully"}, 201)
     except:
         return JSONResponse({"ok": False, "msg": "There was an error registering"}, 400)
 
-"""
+
 @auth_routes.post("/login")
 async def login_user(req: Request):
     user = await req.json()
 
     try:
-        emailvalid = isEmailValid(user["email"])
+        # emailvalid = isEmailValid(user["email"])
 
-        if not isEmailValid(user["email"]):
-            return JSONResponse({"ok": False, "msg": "Email is not valid"}, 400)
+        # if not isEmailValid(user["email"]):
+        #    return JSONResponse({"ok": False, "msg": "Email is not valid"}, 400)
 
         userDB = getUserByEmail(user["email"], True)
-
         if not userDB:
             return JSONResponse({"ok": False, "msg": "User not found"}, 400)
-
         if not checkpw(
             user["password"].encode(
                 "utf-8"), userDB["password"].encode("utf-8")
@@ -55,17 +52,33 @@ async def login_user(req: Request):
                 {"ok": False, "msg": "Incorrect email or password"}, 400
             )
 
-        if not (userDB["isConfirmed"]):
-            return JSONResponse(
-                {
-                    "ok": False,
-                    "msg": "Your account has not been confirmed, please check your inbox.",
-                },
-                400,
-            )
-
-        token = auth_handler.encode_token(userDB["uid"])
+#        if not (userDB["isConfirmed"]):
+#            return JSONResponse(
+#                {
+#                    "ok": False,
+#                    "msg": "Your account has not been confirmed, please check your inbox.",
+#                },
+#                400,
+#            )
+        token = auth_handler.encode_token(userDB.get("uid"))
+        print(token)
         return JSONResponse({"ok": True, "user": userDB, "token": token}, 200)
     except:
         return JSONResponse({"ok": False, "msg": "There was an error"}, 400)
-"""
+
+
+@auth_routes.get("/revalidate-token")
+def revalidate_token(uid=Depends(auth_handler.auth_wrapper)):
+
+    try:
+        if not (uid):
+            return JSONResponse({"ok": False, "msg": "Invalid token"}, 401)
+
+        userDB = getUser(uid)
+        if not (userDB):
+            return JSONResponse({"ok": False, "msg": "Not found user"}, 404)
+
+        token = auth_handler.encode_token(userDB.get("uid"))
+        return JSONResponse({"ok": True, "user": userDB, "token": token}, 200)
+    except:
+        return JSONResponse({"ok": False, "msg": "There was an error"}, 400)

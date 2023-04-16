@@ -3,6 +3,7 @@ import ssl
 import smtplib
 import os
 
+# Send email to user - mas adelante se desarrollará expo cli
 
 def sendMail(email_receiver: str, uid: str, fullname: str):
     email_sender = os.getenv("EMAIL")
