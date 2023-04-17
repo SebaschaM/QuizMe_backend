@@ -6,7 +6,6 @@ from services.auth import *
 
 from utils.jwt import AuthHandler
 from utils.validation_user import areValidFields, isEmailValid
-from utils.send_mail import sendMail
 
 auth_routes = APIRouter()
 auth_handler = AuthHandler()
@@ -25,7 +24,6 @@ async def register_user(req: Request):
         if userDB:
             return JSONResponse({"ok": False, "msg": "User already registered"}, 400)
         insertUser(new_user)
-        # sendMail(new_user["email"], new_user["uid"], new_user["fullname"])
         return JSONResponse({"ok": True, "msg": "User registered successfully"}, 201)
     except:
         return JSONResponse({"ok": False, "msg": "There was an error registering"}, 400)
@@ -36,10 +34,10 @@ async def login_user(req: Request):
     user = await req.json()
 
     try:
-        # emailvalid = isEmailValid(user["email"])
+        emailvalid = isEmailValid(user["email"])
 
-        # if not isEmailValid(user["email"]):
-        #    return JSONResponse({"ok": False, "msg": "Email is not valid"}, 400)
+        if not isEmailValid(user["email"]):
+            return JSONResponse({"ok": False, "msg": "Email is not valid"}, 400)
 
         userDB = getUserByEmail(user["email"], True)
         if not userDB:
@@ -52,21 +50,12 @@ async def login_user(req: Request):
                 {"ok": False, "msg": "Incorrect email or password"}, 400
             )
 
-#        if not (userDB["isConfirmed"]):
-#            return JSONResponse(
-#                {
-#                    "ok": False,
-#                    "msg": "Your account has not been confirmed, please check your inbox.",
-#                },
-#                400,
-#            )
-        token = auth_handler.encode_token(userDB.get("uid"))
-        print(token)
+        token = auth_handler.encode_token(userDB.get("id"))
         return JSONResponse({"ok": True, "user": userDB, "token": token}, 200)
     except:
         return JSONResponse({"ok": False, "msg": "There was an error"}, 400)
 
-
+"""
 @auth_routes.get("/revalidate-token")
 def revalidate_token(uid=Depends(auth_handler.auth_wrapper)):
 
@@ -78,7 +67,9 @@ def revalidate_token(uid=Depends(auth_handler.auth_wrapper)):
         if not (userDB):
             return JSONResponse({"ok": False, "msg": "Not found user"}, 404)
 
-        token = auth_handler.encode_token(userDB.get("uid"))
+        token = auth_handler.encode_token(userDB.get("id"))
         return JSONResponse({"ok": True, "user": userDB, "token": token}, 200)
     except:
         return JSONResponse({"ok": False, "msg": "There was an error"}, 400)
+
+"""

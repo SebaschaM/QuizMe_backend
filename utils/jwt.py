@@ -10,9 +10,9 @@ import jwt
 class AuthHandler:
     bearer = HTTPBearer()
 
-    def encode_token(self, uid: str):
+    def encode_token(self, id: str):
         payload = {
-            "uid": uid,
+            "uid": id,
             "exp": datetime.utcnow() + timedelta(days=1),
         }
         token = jwt.encode(payload, getenv(
