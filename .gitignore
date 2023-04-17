@@ -1,2 +1,4 @@
 /env
+.env
+cred.json
 /__pycache__
